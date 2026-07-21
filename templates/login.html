@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inicio de Sesión - Sistema de Inventario</title>
+  <link rel="stylesheet" href="../static/style.css" />
+</head>
+<body class="login-page">
+  <div class="login-container">
+    <div class="login-card">
+      <h1 class="login-title">Sistema de Inventario<br>y Ventas</h1>
+      <div class="alert alert-error" id="error-msg" style="display:none;">
+        Usuario o contraseña incorrectos.
+      </div>
+      <div class="form-group">
+        <label for="usuario">Usuario:</label>
+        <input type="text" id="usuario" placeholder="Ingrese su usuario" autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <label for="password">Contraseña:</label>
+        <input type="password" id="password" placeholder="Ingrese su contraseña" autocomplete="current-password" />
+      </div>
+      <button>
+
+      </button>
+      <button class="btn btn-primary btn-block" id="btn-login">
+        Iniciar Sesión
+      </button>
+    </div>
+  </div>
+  <script type="module" src="../static/main.js"></script>
+</body>
+</html>

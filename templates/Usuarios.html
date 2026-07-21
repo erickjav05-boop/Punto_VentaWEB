@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usuarios - InvSys</title>
+  <link rel="stylesheet" href="../static/style.css" />
+</head>
+<body class="dark-theme">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-icon">📦</span>
+        <span class="brand-name">InvSys</span>
+      </div>
+      <div class="sidebar-user">
+        <div class="user-avatar" id="user-avatar">A</div>
+        <div>
+          <p class="user-name" id="user-name">Administrador</p>
+          <p class="user-role" id="user-role">Rol: Admin</p>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-btn" data-view="inventario" onclick="window.location.href='index.html'">Inventario</button>
+        <button class="nav-btn" data-view="nueva-venta" onclick="window.location.href='nueva_ventana.html'">Nueva Venta</button>
+        <button class="nav-btn" data-view="historial" onclick="window.location.href='historial.html'">Historial</button>
+        <button class="nav-btn active" data-view="usuarios" onclick="window.location.href='Usuarios.html'">Usuarios</button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="nav-btn nav-btn-danger" id="btn-cerrar-sesion">Cerrar Sesión</button>
+        <button class="nav-btn nav-btn-outline" id="btn-cambiar-tema">Cambiar Tema</button>
+      </div>
+    </aside>
+    <main class="main-content">
+      <section class="view active" id="view-usuarios">
+        <div class="toolbar">
+          <div class="toolbar-title">
+            <span class="toolbar-icon">👥</span>
+            <h2>Gestión de Usuarios</h2>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn btn-primary" id="btn-agregar-usuario">+ Agregar Usuario</button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table id="tabla-usuarios">
+            <thead>
+              <tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tbody-usuarios"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="modal-usuario" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Agregar Usuario</h3>
+        <button class="modal-close" data-close-modal="modal-usuario">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label>Nombre completo</label><input type="text" id="mu-nombre" placeholder="Juan Pérez" /></div>
+        <div class="form-group"><label>Usuario</label><input type="text" id="mu-usuario" placeholder="jperez" /></div>
+        <div class="form-group"><label>Contraseña</label><input type="password" id="mu-password" placeholder="••••••••" /></div>
+        <div class="form-group">
+          <label>Rol</label>
+          <select id="mu-rol">
+            <option value="empleado">Empleado</option>
+            <option value="administrador">Administrador</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-close-modal="modal-usuario">Cancelar</button>
+        <button class="btn btn-primary" id="btn-guardar-usuario">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script type="module" src="../static/main.js"></script>
+</body>
+</html>
