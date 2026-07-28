@@ -1,7 +1,6 @@
 import { obtenerInventario, crearProductoBD, actualizarProductoBD, eliminarProductoBD } from './db.js';
 import { fmt, toast } from './utils.js';
 import { cerrarModal } from './modales.js';
-
 const STOCK_MINIMO = 5;
 export let productos = [];
 let productoSeleccionado = null;
@@ -16,14 +15,11 @@ export function renderizarTablaInventario(lista) {
   const datos = lista !== undefined ? lista : productos;
   const tbody  = document.getElementById('tbody-inventario');
   if (!tbody) return;
-
   tbody.innerHTML = '';
   datos.forEach(p => {
     const tr = document.createElement('tr');
     if (productoSeleccionado === p.codigo) tr.classList.add('selected');
-
     const stockClass = p.stock < STOCK_MINIMO ? 'stock-low-cell' : '';
-
     tr.innerHTML = `
       <td>${p.codigo}</td>
       <td>${p.nombre}</td>
@@ -33,13 +29,11 @@ export function renderizarTablaInventario(lista) {
       <td class="${stockClass}">${p.stock}</td>
       <td>${p.unidad}</td>
     `;
-
     tr.addEventListener('click', () => {
       productoSeleccionado = p.codigo;
       document.querySelectorAll('#tbody-inventario tr').forEach(r => r.classList.remove('selected'));
       tr.classList.add('selected');
     });
-
     tbody.appendChild(tr);
   });
   gestionarStock();
@@ -60,7 +54,6 @@ function gestionarStock() {
   const alerta = document.getElementById('stock-alert');
   const texto  = document.getElementById('stock-alert-text');
   if (!alerta) return;
-
   if (bajos.length > 0) {
     alerta.style.display = 'flex';
     texto.textContent = 'Stock bajo: ' + bajos.join(', ');
@@ -73,13 +66,10 @@ export function abrirModalInventario(modo, producto) {
   modoModal = modo;
   const modal = document.getElementById('modal-producto');
   document.getElementById('modal-titulo').textContent = modo === 'agregar' ? 'Agregar Producto' : 'Editar Producto';
-
   ['modal-codigo','modal-nombre','modal-categoria','modal-unidad',
    'modal-costo','modal-precio','modal-stock','modal-codigo-original']
     .forEach(id => { document.getElementById(id).value = ''; });
-
   document.getElementById('modal-codigo').readOnly = (modo === 'editar');
-
   if (modo === 'editar' && producto) {
     document.getElementById('modal-codigo-original').value = producto.codigo;
     document.getElementById('modal-codigo').value     = producto.codigo;
@@ -101,14 +91,11 @@ export async function guardarProducto() {
   const costo     = parseFloat(document.getElementById('modal-costo').value);
   const precio    = parseFloat(document.getElementById('modal-precio').value);
   const stock     = parseInt(document.getElementById('modal-stock').value, 10);
-
   if (!codigo || !nombre || isNaN(costo) || isNaN(precio) || isNaN(stock)) {
     toast('Completa todos los campos correctamente.', 'error');
     return;
   }
-
   const nuevoProducto = { codigo, nombre, categoria, costo, precio, stock, unidad };
-
   if (modoModal === 'agregar') {
     if (productos.find(p => p.codigo === codigo)) { toast('Ya existe un producto con ese código.', 'error'); return; }
     const exito = await crearProductoBD(nuevoProducto);
@@ -118,7 +105,6 @@ export async function guardarProducto() {
     const exito = await actualizarProductoBD(codigoOriginal, nuevoProducto);
     if (exito) { toast('Producto actualizado.'); productoSeleccionado = codigo; }
   }
-
   cerrarModal('modal-producto');
   await cargarYRenderizarInventario();
 }
@@ -126,7 +112,6 @@ export async function guardarProducto() {
 export async function eliminarProducto() {
   if (!productoSeleccionado) { toast('Selecciona un producto primero.', 'error'); return; }
   if (!confirm('¿Eliminar el producto ' + productoSeleccionado + ' de la base de datos?')) return;
-
   const exito = await eliminarProductoBD(productoSeleccionado);
   if (exito) {
     productoSeleccionado = null;

@@ -11,7 +11,6 @@ export function renderizarTablaVenta(lista) {
   const tbody = document.getElementById('tbody-venta-productos');
   if (!tbody) return;
   tbody.innerHTML = '';
-
   datos.forEach(p => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -29,7 +28,6 @@ export function renderizarTablaVenta(lista) {
 function agregarAlCarrito(codigo) {
   const prod = productos.find(p => p.codigo === codigo);
   if (!prod) return;
-
   const existente = carrito.find(i => i.producto.codigo === codigo);
   if (existente) {
     if (existente.cantidad >= prod.stock) { toast('No hay más stock disponible.', 'error'); return; }
@@ -45,10 +43,8 @@ function renderizarCarrito() {
   const contenedor = document.getElementById('carrito-items');
   const totalEl    = document.getElementById('carrito-total-valor');
   if (!contenedor) return;
-
   contenedor.innerHTML = '';
   let total = 0;
-
   carrito.forEach((item, idx) => {
     total += item.producto.precio * item.cantidad;
     const div = document.createElement('div');
@@ -72,7 +68,6 @@ function renderizarCarrito() {
     div.querySelector('.btn-remove-item').addEventListener('click', () => { carrito.splice(idx, 1); renderizarCarrito(); });
     contenedor.appendChild(div);
   });
-
   if (totalEl) totalEl.textContent = fmt(total);
 }
 
@@ -84,7 +79,6 @@ function generarTicketPDF(venta, items) {
     unit: 'mm',
     format: [80, 150] 
   });
-
   doc.setFontSize(14);
   doc.setFont(undefined, 'bold');
   doc.text("InvSys", 40, 10, { align: "center" });
@@ -98,41 +92,34 @@ function generarTicketPDF(venta, items) {
   doc.text(`Fecha: ${new Date().toLocaleDateString('es-MX')}`, 5, 30);
   doc.text(`Cajero: ${venta.vendedor}`, 5, 35);
   doc.text("-------------------------------------------------", 5, 40);
-
   let y = 45;
   items.forEach(item => {
     doc.text(`${item.cantidad}x ${item.producto.nombre}`, 5, y);
     doc.text(`${fmt(item.producto.precio * item.cantidad)}`, 75, y, { align: "right" });
     y += 6;
   });
-
   doc.text("-------------------------------------------------", 5, y);
   y += 6;
   doc.setFontSize(11);
   doc.setFont(undefined, 'bold');
   doc.text(`TOTAL: ${fmt(venta.total)}`, 75, y, { align: "right" });
-
   y += 10;
   doc.setFontSize(9);
   doc.setFont(undefined, 'normal');
   doc.text("¡Gracias por tu compra!", 40, y, { align: "center" });
-
   doc.save(`Ticket_${venta.folio_venta}.pdf`);
 }
 
 export async function confirmarVenta() {
   if (carrito.length === 0) { toast('El carrito está vacío.', 'error'); return; }
-
   let total = 0;
   let arrayProductosVenta = [];
-
   for (let item of carrito) {
     total += item.producto.precio * item.cantidad;
     const nuevoStock = item.producto.stock - item.cantidad;
     await actualizarProductoBD(item.producto.codigo, { stock: nuevoStock });
     arrayProductosVenta.push(`${item.producto.nombre} x${item.cantidad}`);
   }
-
   const sesion = Session.obtener();
   const nuevaVenta = {
     folio_venta: 'VTA' + String(Date.now()).slice(-6),
@@ -140,7 +127,6 @@ export async function confirmarVenta() {
     total: total,
     vendedor: sesion ? sesion.nombre : 'Desconocido'
   };
-
   const exito = await registrarVentaBD(nuevaVenta);
   
   if (exito) {
@@ -150,7 +136,6 @@ export async function confirmarVenta() {
       console.error("Error al generar el ticket PDF:", error);
       toast('Venta registrada, pero falló el ticket PDF', 'error');
     }
-
     carrito = [];
     renderizarCarrito();
     toast('Venta registrada exitosamente.');
@@ -176,15 +161,12 @@ export function renderizarHistorial() {
   const tbody = document.getElementById('tbody-historial');
   const empty = document.getElementById('historial-vacio');
   if (!tbody) return;
-
   tbody.innerHTML = '';
-
   if (historialVentas.length === 0) {
     if (empty) empty.style.display = 'block';
     return;
   }
   if (empty) empty.style.display = 'none';
-
   historialVentas.forEach(v => {
     const tr = document.createElement('tr');
     const fechaFormateada = new Date(v.fecha).toLocaleString('es-MX');

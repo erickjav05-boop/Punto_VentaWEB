@@ -1,7 +1,6 @@
 export function fmt(n) { 
     return '$' + Number(n).toFixed(2); 
 }
-
 export function toast(msg, tipo = 'ok') {
   const el = document.getElementById('toast');
   if (!el) return;
@@ -10,7 +9,6 @@ export function toast(msg, tipo = 'ok') {
   clearTimeout(el._t);
   el._t = setTimeout(() => { el.className = 'toast'; }, 2800);
 }
-
 export function alternarTema() {
   const body = document.body;
   if (body.classList.contains('dark-theme')) {

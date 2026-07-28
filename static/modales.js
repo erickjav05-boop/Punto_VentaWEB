@@ -2,7 +2,6 @@ export function cerrarModal(id) {
   const el = document.getElementById(id);
   if (el) el.style.display = 'none';
 }
-
 export function inicializarEventosModales() {
     document.querySelectorAll('[data-close-modal]').forEach(btn => {
       btn.addEventListener('click', () => cerrarModal(btn.dataset.closeModal));

@@ -13,7 +13,6 @@ export function renderizarUsuarios() {
   const tbody = document.getElementById('tbody-usuarios');
   if (!tbody) return;
   tbody.innerHTML = '';
-
   listaUsuarios.forEach((u) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -44,11 +43,9 @@ export async function guardarUsuario() {
   const usuario  = document.getElementById('mu-usuario').value.trim();
   const password = document.getElementById('mu-password').value;
   const rol      = document.getElementById('mu-rol').value;
-
   if (!nombre || !usuario || !password) { toast('Completa todos los campos.', 'error'); return; }
   
   if (listaUsuarios.find(u => u.usuario === usuario)) { toast('Ese nombre de usuario ya existe.', 'error'); return; }
-
   const exito = await crearUsuarioBD({ usuario, nombre, password, rol });
   
   if (exito) {
