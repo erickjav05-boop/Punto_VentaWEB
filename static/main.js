@@ -14,19 +14,33 @@ import { cargarYRenderizarUsuarios, guardarUsuario } from './usuarios.js';
 function cambiarVista(nombre) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-btn[data-view]').forEach(b => b.classList.remove('active'));
-  
+ 
     const vista = document.getElementById('view-' + nombre);
     if (vista) vista.classList.add('active');
-  
+ 
     const btn = document.querySelector('.nav-btn[data-view="' + nombre + '"]');
     if (btn) btn.classList.add('active');
-  }
+}
 
 function inicializarLogin() {
   const btnLogin  = document.getElementById('btn-login');
+  
+  // ─── INICIALIZACIÓN DE CÁMARA PARA RECONOCIMIENTO FACIAL ───
+  const video = document.getElementById("video");
+  if (video) {
+      navigator.mediaDevices.getUserMedia({
+          video: true
+      }).then(stream => {
+          video.srcObject = stream;
+      }).catch(err => {
+          console.error("No se pudo acceder a la cámara:", err);
+      });
+  }
+
   if (!btnLogin) return;
   
   if (Session.obtener()) { window.location.href = 'index.html'; return; }
+  
   async function intentar() {
     const u = document.getElementById('usuario').value.trim();
     const p = document.getElementById('password').value;
@@ -46,10 +60,52 @@ function inicializarLogin() {
       document.getElementById('password').value = '';
     }
   }
+
   btnLogin.addEventListener('click', intentar);
   document.getElementById('usuario')?.addEventListener('keydown', e => e.key==='Enter' && intentar());
   document.getElementById('password')?.addEventListener('keydown', e => e.key==='Enter' && intentar());
 }
+
+// ─── FUNCIÓN DE RECONOCIMIENTO FACIAL ───
+async function loginFacial() {
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    
+    if (!video || !canvas) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    
+    const imagen = canvas.toDataURL("image/jpeg");
+
+    try {
+        const respuesta = await fetch("/api/login-facial", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                imagen
+            })
+        });
+
+        const datos = await respuesta.json();
+
+        if (datos.login) {
+            Session.guardar({ usuario: datos.usuario || 'facial', nombre: datos.nombre || 'Usuario Facial', rol: datos.rol || 'empleado' });
+            window.location.href = "index.html";
+        } else {
+            alert("Rostro no reconocido");
+        }
+    } catch (error) {
+        console.error("Error en la petición de reconocimiento facial:", error);
+        alert("Ocurrió un error al intentar iniciar sesión.");
+    }
+}
+
+// Expone la función de forma global para que el evento onclick del HTML (con type="module") pueda leerla
+window.loginFacial = loginFacial;
 
 async function inicializarApp() {
   const sesion = Session.obtener();
@@ -128,6 +184,7 @@ async function inicializarApp() {
   });
   document.getElementById('btn-guardar-usuario')?.addEventListener('click', guardarUsuario);
 }
+
 /* ─── ARRANQUE ────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   const pagina = window.location.pathname.split('/').pop();

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Usuarios - InvSys</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="static/style.css" />
 </head>
 <body class="dark-theme">
   <div class="app-shell">
@@ -53,6 +53,8 @@
       </section>
     </main>
   </div>
+
+  <!-- Modal para Agregar Usuario / Registrar Rostro -->
   <div class="modal-overlay" id="modal-usuario" style="display:none;">
     <div class="modal-box">
       <div class="modal-header">
@@ -70,6 +72,17 @@
             <option value="administrador">Administrador</option>
           </select>
         </div>
+
+        <!-- Sección de Registro Facial integrada -->
+        <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+          <label style="font-size: 12px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Reconocimiento Facial</label>
+          <video id="video-registro" autoplay playsinline style="width: 100%; max-height: 160px; background: #000; border-radius: var(--radius); object-fit: cover;"></video>
+          <canvas id="canvas-registro" style="display:none;"></canvas>
+          <button type="button" class="btn btn-secondary btn-block" onclick="registrarRostro('admin')">
+            Registrar rostro
+          </button>
+        </div>
+
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" data-close-modal="modal-usuario">Cancelar</button>
@@ -77,7 +90,8 @@
       </div>
     </div>
   </div>
+
   <div class="toast" id="toast"></div>
-  <script type="module" src="/static/main.js"></script>
+  <script type="module" src="static/main.js"></script>
 </body>
 </html>
