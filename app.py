@@ -36,7 +36,7 @@ def historial():
 
 @app.route('/Usuarios.html')
 def usuarios():
-    return render_template('Usuarios.html') 
+    return render_template('Usuarios.html')
 
 # ==========================================
 # API: INVENTARIO
