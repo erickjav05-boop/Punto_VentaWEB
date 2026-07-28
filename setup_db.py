@@ -55,24 +55,3 @@ VALUES
   ('Emple', 'Erick Santos', 'emple123', 'empleado')
 ON CONFLICT (usuario) DO NOTHING;
 """
-
-try:
-    print("Conectando a la base de datos en Render...")
-    conexion = psycopg2.connect(db_url)
-    cursor = conexion.cursor()
-    
-    print("Creando tablas e insertando datos...")
-    cursor.execute(sql_crear_tablas)
-    
-    # Guardar los cambios
-    conexion.commit()
-    print("✅ ¡Base de datos configurada exitosamente!")
-    
-except Exception as e:
-    print(f"❌ Error al configurar la base de datos: {e}")
-finally:
-    if 'cursor' in locals():
-        cursor.close()
-    if 'conexion' in locals():
-        conexion.close()
-        
