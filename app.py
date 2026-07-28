@@ -3,6 +3,10 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from flask import Flask, render_template, jsonify, request
 from dotenv import load_dotenv
+import cv2
+import face_recognition
+import numpy as np
+import base64
 
 # Carga la variable DATABASE_URL de tu archivo .env
 load_dotenv()
@@ -14,6 +18,13 @@ db_url = os.environ.get("DATABASE_URL")
 def get_db_connection():
     return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
 
+def obtener_encoding(imagen):
+    rgb = cv2.cvtColor(imagen, cv2.COLOR_BGR2RGB)
+    ubicaciones = face_recognition.face_locations(rgb)
+    if len(ubicaciones) != 1:
+        return None
+    encoding = face_recognition.face_encodings(rgb, ubicaciones)[0]
+    return encoding
 # ==========================================
 # RUTAS PARA MOSTRAR TUS PÁGINAS HTML
 # ==========================================
@@ -170,9 +181,66 @@ def validar_login():
 # ==========================================
 # API: RECONOCIMIENTO FACIAL (Por hacer)
 # ==========================================
-@app.route('/api/login-facial', methods=['POST'])
+@app.route("/api/login-facial", methods=["POST"])
 def login_facial():
-    return jsonify({"status": "pendiente"})
+    data = request.json
+    imagen = data["imagen"]
+    imagen = imagen.split(",")[1]
+    imagen = base64.b64decode(imagen)
+    arreglo = np.frombuffer(imagen, np.uint8)
+    imagen = cv2.imdecode(arreglo, cv2.IMREAD_COLOR)
+    encoding = obtener_encoding(imagen)
+    if encoding is None:
+        return jsonify({"login":False})
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT usuario,nombre,rol,face_encoding FROM usuarios")
+    usuarios = cur.fetchall()
+    cur.close()
+    conn.close()
+    for usuario in usuarios:
+        if usuario["face_encoding"] is None:
+            continue
+        guardado = np.array(
+            list(map(float, usuario["face_encoding"].split(",")))
+        )
+        resultado = face_recognition.compare_faces(
+            [guardado],
+            encoding
+        )
+        if resultado[0]:
+            return jsonify({
+                "login":True,
+                "usuario":usuario["usuario"],
+                "nombre":usuario["nombre"],
+                "rol":usuario["rol"]
+            })
+    return jsonify({"login":False})
+
+@app.route("/api/registrar-rostro", methods=["POST"])
+def registrar_rostro():
+    data = request.json
+    usuario = data["usuario"]
+    imagen = data["imagen"]
+    imagen = imagen.split(",")[1]
+    imagen = base64.b64decode(imagen)
+    arreglo = np.frombuffer(imagen, np.uint8)
+    imagen = cv2.imdecode(arreglo, cv2.IMREAD_COLOR)
+    encoding = obtener_encoding(imagen)
+    if encoding is None:
+        return jsonify({"error":"No se detectó un rostro"}),400
+
+    texto = ",".join(map(str, encoding.tolist()))
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE usuarios SET face_encoding=%s WHERE usuario=%s",
+        (texto, usuario)
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"success":True})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

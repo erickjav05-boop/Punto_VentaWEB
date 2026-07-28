@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
   usuario text UNIQUE NOT NULL,
   nombre text NOT NULL,
   password text NOT NULL,
-  rol text NOT NULL
+  rol text NOT NULL,
+  face_encoding TEXT
 );
 
 -- 4. Insertar datos de prueba (Solo si no existen)
