@@ -75,3 +75,4 @@ finally:
         cursor.close()
     if 'conexion' in locals():
         conexion.close()
+        
