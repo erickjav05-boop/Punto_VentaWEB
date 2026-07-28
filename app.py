@@ -20,23 +20,23 @@ def get_db_connection():
 @app.route('/')
 @app.route('/index.html')
 def index():
-    return render_template('Index.html')
+    return render_template('index.html')
 
 @app.route('/login.html')
 def login():
-    return render_template('Login.html')
+    return render_template('login.html')
 
 @app.route('/nueva_ventana.html')
 def nueva_venta():
-    return render_template('Nueva_ventana.html')
+    return render_template('nueva_ventana.html')
 
 @app.route('/historial.html')
 def historial():
-    return render_template('Historial.html')
+    return render_template('historial.html')
 
 @app.route('/Usuarios.html')
 def usuarios():
-    return render_template('Ususario.html') 
+    return render_template('usuarios.html') 
 
 # ==========================================
 # API: INVENTARIO
