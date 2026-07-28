@@ -34,9 +34,9 @@ def nueva_venta():
 def historial():
     return render_template('historial.html')
 
-@app.route('/Usuarios.html')
+@app.route('/Ususario.html')
 def usuarios():
-    return render_template('usuarios.html') 
+    return render_template('Ususario.html') 
 
 # ==========================================
 # API: INVENTARIO
