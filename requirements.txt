@@ -1,7 +1,6 @@
 Flask
 psycopg2-binary
 python-dotenv
-gunicorn
 opencv-python-headless
 numpy
 face-recognition

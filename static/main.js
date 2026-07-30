@@ -8,35 +8,19 @@ import {
     abrirModalInventario, eliminarProducto, guardarProducto, getProductoSeleccionado
 } from './inventario.js';
 import { renderizarTablaVenta, confirmarVenta, cargarYRenderizarHistorial } from './ventas.js';
-import { cargarYRenderizarUsuarios, guardarUsuario } from './usuarios.js';
+import { cargarYRenderizarUsuarios, guardarUsuario, encenderCamaraRegistro, apagarCamaraRegistro } from './usuarios.js';
 
-/* ─── NAVEGACIÓN SPA (Solo si mantienes todo en index.html) ─── */
 function cambiarVista(nombre) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-btn[data-view]').forEach(b => b.classList.remove('active'));
- 
     const vista = document.getElementById('view-' + nombre);
     if (vista) vista.classList.add('active');
- 
     const btn = document.querySelector('.nav-btn[data-view="' + nombre + '"]');
     if (btn) btn.classList.add('active');
 }
 
 function inicializarLogin() {
   const btnLogin  = document.getElementById('btn-login');
-  
-  // ─── INICIALIZACIÓN DE CÁMARA PARA RECONOCIMIENTO FACIAL ───
-  const video = document.getElementById("video");
-  if (video) {
-      navigator.mediaDevices.getUserMedia({
-          video: true
-      }).then(stream => {
-          video.srcObject = stream;
-      }).catch(err => {
-          console.error("No se pudo acceder a la cámara:", err);
-      });
-  }
-
   if (!btnLogin) return;
   
   if (Session.obtener()) { window.location.href = 'index.html'; return; }
@@ -60,52 +44,49 @@ function inicializarLogin() {
       document.getElementById('password').value = '';
     }
   }
-
   btnLogin.addEventListener('click', intentar);
   document.getElementById('usuario')?.addEventListener('keydown', e => e.key==='Enter' && intentar());
   document.getElementById('password')?.addEventListener('keydown', e => e.key==='Enter' && intentar());
+
+  const videoLogin = document.querySelector('video');
+  if (videoLogin) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => { videoLogin.srcObject = stream; videoLogin.play(); })
+        .catch(err => console.error("Error al acceder a la cámara:", err));
+  }
+
+  window.loginFacial = async function() {
+      if (!videoLogin || !videoLogin.srcObject) {
+          alert('La cámara no está encendida.'); return;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = videoLogin.videoWidth;
+      canvas.height = videoLogin.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoLogin, 0, 0, canvas.width, canvas.height);
+      const imagenData = canvas.toDataURL('image/jpeg');
+
+      try {
+          const res = await fetch('/api/login-facial', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ imagen: imagenData })
+          });
+          const data = await res.json();
+          if (data.login) {
+              Session.guardar({ usuario: data.usuario, nombre: data.nombre, rol: data.rol });
+              const pistas = videoLogin.srcObject.getTracks();
+              pistas.forEach(pista => pista.stop());
+              window.location.href = 'index.html';
+          } else {
+              alert('Rostro no reconocido.');
+          }
+      } catch (error) {
+          console.error('Error en login facial:', error);
+          alert('Error al conectar con el servidor.');
+      }
+  };
 }
-
-// ─── FUNCIÓN DE RECONOCIMIENTO FACIAL ───
-async function loginFacial() {
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    
-    if (!video || !canvas) return;
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
-    
-    const imagen = canvas.toDataURL("image/jpeg");
-
-    try {
-        const respuesta = await fetch("/api/login-facial", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                imagen
-            })
-        });
-
-        const datos = await respuesta.json();
-
-        if (datos.login) {
-            Session.guardar({ usuario: datos.usuario || 'facial', nombre: datos.nombre || 'Usuario Facial', rol: datos.rol || 'empleado' });
-            window.location.href = "index.html";
-        } else {
-            alert("Rostro no reconocido");
-        }
-    } catch (error) {
-        console.error("Error en la petición de reconocimiento facial:", error);
-        alert("Ocurrió un error al intentar iniciar sesión.");
-    }
-}
-
-// Expone la función de forma global para que el evento onclick del HTML (con type="module") pueda leerla
-window.loginFacial = loginFacial;
 
 async function inicializarApp() {
   const sesion = Session.obtener();
@@ -113,6 +94,7 @@ async function inicializarApp() {
   const temaGuardado = localStorage.getItem('tema') || 'dark';
   document.body.className = temaGuardado + '-theme';
   const paginaActual = window.location.pathname.split('/').pop();
+
   if (sesion) {
     const nameEl = document.getElementById('user-name');
     const roleEl = document.getElementById('user-role');
@@ -120,20 +102,19 @@ async function inicializarApp() {
     if (nameEl) nameEl.textContent = sesion.nombre || 'Usuario';
     if (roleEl) roleEl.textContent = 'Rol: ' + (sesion.rol || 'empleado');
     if (avatarEl) avatarEl.textContent = (sesion.nombre || 'U')[0].toUpperCase();
-    // 🔒 CONTROL DE SEGURIDAD 🔒
+
     if (sesion.rol === 'empleado') {
       const btnInv = document.querySelector('.nav-btn[data-view="inventario"]');
       const btnUsu = document.querySelector('.nav-btn[data-view="usuarios"]');
       if (btnInv) btnInv.style.display = 'none';
       if (btnUsu) btnUsu.style.display = 'none';
-      // Redirección si se separaron los HTML
       if (paginaActual === 'index.html' || paginaActual === '' || paginaActual === 'Usuarios.html') {
         window.location.href = 'nueva_ventana.html';
         return; 
       }
     }
   }
-  // ─── CARGA INICIAL DE DATOS ───
+
   if (paginaActual === 'index.html' || paginaActual === '' || paginaActual === 'nueva_ventana.html') {
       await cargarYRenderizarInventario();
       if (paginaActual === 'nueva_ventana.html' || (paginaActual === 'index.html' && document.getElementById('view-nueva-venta'))) {
@@ -146,51 +127,62 @@ async function inicializarApp() {
   if (paginaActual === 'Usuarios.html' || (paginaActual === 'index.html' && document.getElementById('view-usuarios'))) {
       await cargarYRenderizarUsuarios();
   }
-  // ─── CONEXIÓN DE EVENTOS ───
+
   inicializarEventosModales();
-  // Navegación SPA
+
   document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
     btn.addEventListener('click', () => {
-        // Solo ejecuta cambiarVista si estamos en la SPA (todo en index.html)
         if(!btn.hasAttribute('onclick')) cambiarVista(btn.dataset.view);
     });
   });
+
   document.getElementById('btn-cerrar-sesion')?.addEventListener('click', Session.cerrar.bind(Session));
   document.getElementById('btn-cambiar-tema')?.addEventListener('click', alternarTema);
   
-  // Eventos de Inventario
   document.getElementById('buscador-inventario')?.addEventListener('input', e => filtrarProductos(e.target.value));
   document.getElementById('btn-agregar')?.addEventListener('click', () => abrirModalInventario('agregar'));
   document.getElementById('btn-editar')?.addEventListener('click', () => {
     const prodSel = getProductoSeleccionado();
-    if (!prodSel) { toast('Selecciona un producto para editar.', 'error'); return; }
+    if (!prodSel) return;
     const prod = productos.find(p => p.codigo === prodSel);
     abrirModalInventario('editar', prod);
   });
   document.getElementById('btn-eliminar')?.addEventListener('click', eliminarProducto);
   document.getElementById('btn-guardar-producto')?.addEventListener('click', guardarProducto);
-  // Eventos de Venta
+
   document.getElementById('buscador-venta')?.addEventListener('input', e => {
     const t = e.target.value.toLowerCase();
-    const filtrados = productos.filter(p =>
-      p.nombre.toLowerCase().includes(t) || p.codigo.toLowerCase().includes(t)
-    );
+    const filtrados = productos.filter(p => p.nombre.toLowerCase().includes(t) || p.codigo.toLowerCase().includes(t));
     renderizarTablaVenta(filtrados);
   });
   document.getElementById('btn-confirmar-venta')?.addEventListener('click', confirmarVenta);
-  // Eventos de Usuarios
+
   document.getElementById('btn-agregar-usuario')?.addEventListener('click', () => {
     document.getElementById('modal-usuario').style.display = 'flex';
+    encenderCamaraRegistro();
   });
-  document.getElementById('btn-guardar-usuario')?.addEventListener('click', guardarUsuario);
+  
+  document.getElementById('btn-guardar-usuario')?.addEventListener('click', () => {
+      guardarUsuario();
+      apagarCamaraRegistro();
+  });
+
+  document.querySelectorAll('[data-close-modal="modal-usuario"]').forEach(btn => {
+      btn.addEventListener('click', apagarCamaraRegistro);
+  });
 }
 
-/* ─── ARRANQUE ────────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
+function arrancarSistema() {
   const pagina = window.location.pathname.split('/').pop();
   if (pagina === 'login.html') {
     inicializarLogin();
   } else {
     inicializarApp();
   }
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', arrancarSistema);
+} else {
+  arrancarSistema();
+}

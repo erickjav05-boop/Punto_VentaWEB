@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inicio de Sesión - Sistema de Inventario</title>
-  <link rel="stylesheet" href="static/style.css" />
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body class="login-page">
   <div class="login-container">
@@ -28,13 +28,9 @@
       <button class="btn btn-primary btn-block" id="btn-login" style="margin-top: 15px;">
         Iniciar Sesión
       </button>
-
-      <!-- Separador visual -->
       <div style="text-align: center; margin: 20px 0; color: var(--text-muted); font-size: 13px;">
         o
       </div>
-
-      <!-- Sección de Reconocimiento Facial integrada con el estilo -->
       <div style="display: flex; flex-direction: column; gap: 12px;">
         <video id="video" autoplay playsinline style="width: 100%; max-height: 200px; background: #000; border-radius: var(--radius); object-fit: cover;"></video>
         
@@ -44,9 +40,8 @@
           Iniciar con reconocimiento facial
         </button>
       </div>
-
     </div>
   </div>
-  <script type="module" src="static/main.js"></script>
+  <script type="module" src="/static/main.js"></script>
 </body>
 </html>

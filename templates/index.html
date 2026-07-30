@@ -4,14 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inventario - InvSys</title>
-  <!-- AQUÍ ESTÁ EL CAMBIO: /static/style.css -->
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body class="dark-theme">
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
-        <span class="brand-icon">📦</span>
         <span class="brand-name">InvSys</span>
       </div>
       <div class="sidebar-user">
@@ -36,13 +34,12 @@
       <section class="view active" id="view-inventario">
         <div class="toolbar">
           <div class="toolbar-title">
-            <span class="toolbar-icon">🗂</span>
             <h2>Inventario de Productos</h2>
           </div>
           <input type="text" id="buscador-inventario" class="search-input" placeholder="Buscar producto..." />
           <div class="toolbar-actions">
-            <button class="btn btn-danger" id="btn-eliminar">🗑 Eliminar</button>
-            <button class="btn btn-secondary" id="btn-editar">✏ Editar</button>
+            <button class="btn btn-danger" id="btn-eliminar">Eliminar</button>
+            <button class="btn btn-secondary" id="btn-editar">Editar</button>
             <button class="btn btn-primary" id="btn-agregar">+ Agregar</button>
           </div>
         </div>
@@ -63,7 +60,7 @@
           </table>
         </div>
         <footer class="stock-alert" id="stock-alert" style="display:none;">
-          <span class="alert-icon">⚠</span>
+          <span class="alert-icon">!</span>
           <span id="stock-alert-text">Stock bajo: </span>
         </footer>
       </section>
@@ -98,7 +95,6 @@
     </div>
   </div>
   <div class="toast" id="toast"></div>
-  <!-- AQUÍ ESTÁ EL OTRO CAMBIO: /static/main.js -->
   <script type="module" src="/static/main.js"></script>
 </body>
 </html>
